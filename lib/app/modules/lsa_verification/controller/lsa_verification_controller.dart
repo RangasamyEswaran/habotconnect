@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 
 enum VerificationStatus {
   idle,
@@ -252,6 +250,9 @@ class LsaVerificationController extends GetxController {
     currentStatus.value = VerificationStatus.processing;
     systemMessage.value = 'Verifying compliance metadata...';
 
+    // Smooth professional delay before final outcome popup.
+    await Future.delayed(const Duration(seconds: 2));
+
     final requestUrl = Uri.parse(_endpointUrl);
     final requestBody = {
       'predecessor_id': predecessorId.value,
@@ -261,6 +262,7 @@ class LsaVerificationController extends GetxController {
     };
 
     // Mock / commented API call for local test compliance flow.
+    debugPrint('API Metadata: x-trace-id=$_traceId | x-logic-hash=$_logicHash');
     debugPrint('API Request URL: ${requestUrl.toString()}');
     debugPrint('API Request Payload: ${jsonEncode(requestBody)}');
 
@@ -297,21 +299,9 @@ class LsaVerificationController extends GetxController {
       'message': 'Compliance verified successfully',
     };
     final simulatedStatusCode = 200;
-    final isNullResponse = false;
-    final isServerFailure = false;
 
     debugPrint('API Response Status: $simulatedStatusCode');
     debugPrint('API Response Body: ${jsonEncode(simulatedResponse)}');
-
-    // if (isServerFailure || isNullResponse) {
-    //   handleLineageFailure(lockForm: true);
-    //   Get.snackbar(
-    //     'Data Quarantined',
-    //     'Data Quarantined – Compliance Failure',
-    //     snackPosition: SnackPosition.BOTTOM,
-    //   );
-    //   return;
-    // }
 
     if (simulatedStatusCode >= 200 && simulatedStatusCode < 300) {
       currentStatus.value = VerificationStatus.success;
